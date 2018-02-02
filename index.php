@@ -1,4 +1,3 @@
-
 <?php
 // echo 1; 
 // error_reporting(E_ALL);
@@ -7,8 +6,6 @@
  $num_mobile = array ( array( 'id' => "086", 'name' => 'viettel', ), array( 'id' => "096", 'name' => 'viettel', ), array( 'id' => "097", 'name' => 'viettel', ), array( 'id' => "098", 'name' => 'viettel', ), array( 'id' => "016", 'name' => 'viettel', ), array( 'id' => "090", 'name' => 'mobifone', ), array( 'id' => "093", 'name' => 'mobifone', ), array( 'id' => "0120", 'name' => 'mobifone', ), array( 'id' => "012", 'name' => 'mobifone', ), array( 'id' => "092", 'name' => 'vietnamobile', ), array( 'id' => "018", 'name' => 'vietnamobile', ), array( 'id' => "099", 'name' => 'gmobile', ), array( 'id' => "019", 'name' => 'gmobile', ), array( 'id' => "0123", 'name' => 'vinaphone', ), array( 'id' => "0124", 'name' => 'vinaphone', ), array( 'id' => "0125", 'name' => 'vinaphone', ), array( 'id' => "0127", 'name' => 'vinaphone', ), array( 'id' => "0129", 'name' => 'vinaphone', ), array( 'id' => "091", 'name' => 'vinaphone', ), array( 'id' => "094", 'name' => 'vinaphone', ), array( 'id' => "088", 'name' => 'vinaphone', ), );
 GLOBAL $target_dir;
 GLOBAL $create_dir;
-
-
 /*
  * 
  * truoc khi upload thi tao cac folder mac dinh nhu ben duoi
@@ -18,17 +15,14 @@ GLOBAL $create_dir;
  * file name index.php 
  * file name download.php la file dung de xu ly download file 
  */
-
 $target_dir = "uploads/";
 $create_dir = "export/";
-
 /* xoa tat ca cac file cu trong download */
 $files = glob($create_dir.'*'); // get all file names
 foreach($files as $file){ // iterate files
     if(is_file($file))
         unlink($file); // delete file
 }
-
 // ham search chuoi trong array
 function searchArrayKeyVal($sKey, $id, $array) {
     foreach ($array as $key => $val) {
@@ -38,16 +32,12 @@ function searchArrayKeyVal($sKey, $id, $array) {
     }
     return false;
 }
-
-
 // doc tung dong file
-
 $target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
 $uploadOk = 1;
 $imageFileType = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
 // Check if image file is a actual image or fake image
 if(isset($_POST["submit"])) {
-
     $check = getimagesize($_FILES["fileToUpload"]["tmp_name"]);
     if($check !== false) {
         echo "File is an image - " . $check["mime"] . ".";
@@ -57,20 +47,16 @@ if(isset($_POST["submit"])) {
         $uploadOk = 0;
     }
 }
-
 if($imageFileType == "txt" ) {
   
     $uploadOk = 1;
 }
-
 // Check if $uploadOk is set to 0 by an error
 if ($uploadOk == 0) {
     echo "Sorry, your file was not uploaded.";
 } else {
     if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
         echo "The file ". basename( $_FILES["fileToUpload"]["name"]). " has been uploaded.<br>";
-
-
     } else {
         //html phan upload 
         echo '<!DOCTYPE html>
@@ -88,16 +74,12 @@ if ($uploadOk == 0) {
 ';
     }
 }
-
-
-
 /*
  * phan xu ly cac ham lien quan toi file
  * 
  * 
  * 
  */
-
 // lay fil luu tru va xu ly
 if ($handle = opendir($target_dir)) {
     
@@ -113,13 +95,30 @@ if ($handle = opendir($target_dir)) {
                 $getFile = fgets($myfile);
                 $makeRows = explode("\n",$getFile);
                 foreach($makeRows as $tmp_row){
+                    
                     if(strlen(trim($tmp_row)) > 0){
                         // 3 so dau substr($tmp_row, 0, 3)
                         // 4 so dau substr($tmp_row, 0, 4)
                         // raw number
                         $rawnumb = preg_replace('/\s+/', '', $tmp_row);
-                        $chuoibaso = substr(preg_replace('/\s+/', '', $tmp_row), 0, 3);
-                        $chuoibonso = substr(preg_replace('/\s+/', '', $tmp_row), 0, 4);
+                        // xet truong hop ki tu dau tien khong phai la so 0
+                        $get_first = substr($rawnumb,0,1);
+                        $get_two = substr($rawnumb,0,2);// for case 84
+                        $get_third = substr($rawnumb,0,3);//+84
+                        
+                        if($get_first!=0&&$get_two!='84'){
+                            $rawnumb = '0'.$rawnumb;
+                        }elseif($get_two=='84'){
+                            $rawnumb = ltrim($rawnumb, '84');
+                            
+                            $rawnumb = '0'.$rawnumb;
+                           
+                        }elseif($get_third=='+84'){
+                            $rawnumb = str_replace('+84', 0, $rawnumb) ;
+                        }
+                       // echo $rawnumb.'<br>';
+                        $chuoibaso = substr(preg_replace('/\s+/', '', $rawnumb), 0, 3);
+                        $chuoibonso = substr(preg_replace('/\s+/', '', $rawnumb), 0, 4);
                         $arrayKey3 = searchArrayKeyVal("id", $chuoibaso, $num_mobile);
                         $arrayKey4 = searchArrayKeyVal("id", $chuoibonso, $num_mobile);
                         
@@ -156,13 +155,11 @@ if ($handle = opendir($target_dir)) {
     
     
 }
-
 /*
  * xu ly download file 
  * 
  * 
  */
-
 if (is_dir($create_dir)){
     
     if ($dh = opendir($create_dir)){
@@ -185,18 +182,10 @@ if (is_dir($create_dir)){
     }
 }
 fclose($myfile); // dong file
-
-
 // xoa file goc sau khi xuat link download cac file con
 $files = glob($target_dir.'*'); // get all file names
 foreach($files as $file){ // iterate files
     if(is_file($file))
         unlink($file); // delete file
 }
-
-
-
 ?>
-
-
-
